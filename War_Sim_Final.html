@@ -1,0 +1,621 @@
+<!DOCTYPE html><html lang="id"><head><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>War Simulasi</title>
+  <style>
+    :root {
+      --primary: #2d7cff;
+      --secondary: #f4f8fd;
+      --card: #fff;
+      --border: #e0e0e0;
+      --text: #222;
+      --accent: #ffc107;
+      --win: #009966;
+      --lose: #ea2027;
+      --draw: #2d7cff;
+      --pie1: #2d7cff;
+      --pie2: #ea2027;
+      --pie3: #343a40;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--secondary);
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .splash {
+      position: fixed;
+      width: 100vw;
+      height: 100vh;
+      top: 0; left: 0;
+      background: linear-gradient(120deg, var(--primary) 0%, #5dade2 100%);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      animation: fadeInSplash 0.7s;
+    }
+    @keyframes fadeInSplash {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .splash-title {
+      font-size: 2.3rem;
+      font-weight: bold;
+      letter-spacing: 1.5px;
+      margin-bottom: 18px;
+      text-shadow: 0 3px 8px #0007;
+      font-family: 'Segoe UI', Arial, sans-serif;
+    }
+    .splash-desc {
+      font-size: 1.2rem;
+      margin-bottom: 26px;
+      opacity: 0.93;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      text-shadow: 0 2px 8px #0004;
+    }
+    .loader {
+      border: 5px solid #d6eaff;
+      border-top: 5px solid #fff;
+      border-radius: 50%;
+      width: 46px;
+      height: 46px;
+      animation: spin 1.2s linear infinite;
+      margin-bottom: 8px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+    .container {
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 1.5rem 0.8rem 2.5rem 0.8rem;
+      box-sizing: border-box;
+    }
+    @media (max-width: 600px) {
+      .container { padding: 0.5rem 0.1rem 1.3rem 0.1rem; }
+    }
+    h1 {
+      text-align: center;
+      color: var(--primary);
+      font-size: 2.1rem;
+      margin-bottom: 0.7rem;
+      letter-spacing: 1px;
+      font-weight: 800;
+    }
+    .section {
+      background: var(--card);
+      margin-bottom: 1.1rem;
+      padding: 1.1rem 1rem 1rem 1rem;
+      border-radius: 14px;
+      box-shadow: 0 2px 7px rgba(44,62,80,.06);
+      border: 1px solid var(--border);
+    }
+    .section h2 {
+      font-size: 1.18rem;
+      margin: 0 0 0.5rem 0;
+      color: var(--primary);
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+    }
+    label {
+      display: block;
+      font-size: 1rem;
+      margin-bottom: 3px;
+      font-weight: 500;
+      color: #444;
+    }
+    select, input[type=number] {
+      width: 100%;
+      margin: 3px 0 10px 0;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid #cfd8dc;
+      font-size: 1.02rem;
+      background: #f8fafb;
+      color: #333;
+      outline: none;
+      transition: box-shadow .15s;
+    }
+    select:focus, input[type=number]:focus {
+      box-shadow: 0 0 0 2px #2d7cff30;
+    }
+    .troop-table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      margin-bottom: 0.6rem;
+    }
+    .troop-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: none;
+      margin-bottom: 0;
+    }
+    .troop-table thead th {
+      background: #eaf1fd;
+      color: #2055a8;
+      font-size: 1.06rem;
+      font-weight: bold;
+      text-align: center;
+      padding: 5px 0 5px 0;
+      letter-spacing: 0.5px;
+    }
+    .troop-table tbody td {
+      padding: 5px;
+      text-align: center;
+    }
+    .troop-table input[type=number] {
+      width: 72px;
+      text-align: right;
+      font-weight: 600;
+      font-size: 1.02rem;
+      margin-bottom: 0;
+      background: #f8fafb;
+      border-color: #e3e3e3;
+    }
+    .tier-label {
+      font-weight: bold;
+      color: #444;
+      font-size: 1.05rem;
+      padding-right: 8px;
+      text-align: left;
+      min-width: 45px;
+    }
+    .troop-table tbody tr:nth-child(even) {
+      background: #f6faff;
+    }
+    .troop-table tbody tr:nth-child(odd) {
+      background: #fff;
+    }
+    @media (max-width: 520px) {
+      .container { max-width: 99vw;}
+      .section, .result { padding: 0.92rem 0.5rem 0.95rem 0.5rem;}
+      .troop-table input[type=number] { width: 45px;}
+      .troop-table thead th { font-size: .97rem;}
+    }
+    @media (max-width: 400px) {
+      h1 {font-size: 1.4rem;}
+      .result, .section {border-radius: 7px;}
+    }
+    button {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 13px 0;
+      width: 100%;
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 1.17rem;
+      box-shadow: 0 2px 8px #2d7cff22;
+      margin: 10px 0 0 0;
+      cursor: pointer;
+      transition: background .18s, box-shadow .18s;
+      letter-spacing: .5px;
+    }
+    button:hover, button:focus {
+      background: #2257b1;
+      box-shadow: 0 3px 12px #2d7cff33;
+      outline: none;
+    }
+    .result {
+      background: #f6faff;
+      padding: 1.2rem 1rem 1.8rem 1rem;
+      border-radius: 12px;
+      border: 1px solid #c5d6f1;
+      margin-top: 1.1rem;
+      box-shadow: 0 2px 6px #2d7cff11;
+    }
+    .result h2 {
+      color: var(--primary);
+      font-size: 1.12rem;
+      margin-bottom: 0.5rem;
+    }
+    .pie-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0.6rem 0 0 0;
+    }
+    .pie-legend {
+      margin: 1.1rem 0 0 0;
+      display: flex;
+      justify-content: center;
+      gap: 1.3rem;
+      font-size: 1rem;
+    }
+    .pie-legend > div {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .pie-dot {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: inline-block;
+      border: 2px solid #fff;
+      box-shadow: 0 0 2px #2222;
+    }
+    .pie-dot.kita { background: var(--win);}
+    .pie-dot.musuh { background: var(--lose);}
+    .pie-dot.hilang { background: var(--pie3);}
+    .hasil-judul {
+      font-size: 1.13rem;
+      margin-top: 0.7rem;
+      text-align: center;
+      font-weight: bold;
+      letter-spacing: .5px;
+    }
+    .pie-center-label {
+      position: absolute;
+      left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 2.1rem;
+      font-weight: bold;
+      color: #222;
+      text-shadow: 0 2px 10px #fff, 0 2px 10px #fff;
+      pointer-events: none;
+      user-select: none;
+      text-align: center;
+      line-height: 1.1;
+    }
+    @media (max-width:420px) {
+      .pie-center-label { font-size: 1.25rem;}
+    }
+  </style>
+</head>
+<body>
+<!-- Splash Modern -->
+<div class="splash" id="splash">
+  <div class="loader"></div>
+  <div class="splash-title">War Simulasi</div>
+  <div class="splash-desc">Powered by Vali PB<br><span style="font-size:0.97rem;opacity:.85;font-weight:400;">Loading simulasi perang...</span></div>
+</div>
+
+<div class="container" style="display:none" id="mainApp">
+  <h1>War Simulasi</h1>
+  <div class="section">
+    <h2>Mode Preset</h2>
+    <select id="presetMode">
+      <option value="">Pilih Mode</option>
+      <option value="solo">Trap Solo</option>
+      <option value="rally">Trap Rally</option>
+      <option value="bait">Bait</option>
+      <option value="normal">Normal</option>
+    </select>
+  </div>
+  <div class="section">
+    <h2>Formasi</h2>
+    <div class="grid">
+      <label>Formasi Kita
+        <select id="formasiKita">
+          <option value="inf">Inf Phalanx</option>
+          <option value="infw">Inf Wedge</option>
+          <option value="range">Range Phalanx</option>
+          <option value="rangew">Range Wedge</option>
+          <option value="cav">Cav Phalanx</option>
+          <option value="cavw">Cav Wedge</option>
+        </select>
+      </label>
+      <label>Formasi Musuh
+        <select id="formasiMusuh">
+          <option value="inf">Inf Phalanx</option>
+          <option value="infw">Inf Wedge</option>
+          <option value="range">Range Phalanx</option>
+          <option value="rangew">Range Wedge</option>
+          <option value="cav">Cav Phalanx</option>
+          <option value="cavw">Cav Wedge</option>
+        </select>
+      </label>
+    </div>
+  </div>
+  <div class="section">
+    <h2>Buff Kita &amp; Musuh</h2>
+    <div class="grid">
+      <label>ATK Kita
+        <select id="atkKita">
+          <option>200%</option><option>400%</option><option>600%</option><option>800%</option><option>1000%</option><option>1200%</option>
+        </select>
+      </label>
+      <label>DEF Kita
+        <select id="defKita">
+          <option>100%</option><option>200%</option><option>300%</option><option>400%</option><option>500%</option><option>600%</option>
+        </select>
+      </label>
+      <label>HP Kita
+        <select id="hpKita">
+          <option>100%</option><option>200%</option><option>300%</option><option>400%</option><option>500%</option><option>600%</option>
+        </select>
+      </label>
+      <label>ATK Musuh
+        <select id="atkMusuh">
+          <option>200%</option><option>400%</option><option>600%</option><option>800%</option><option>1000%</option><option>1200%</option>
+        </select>
+      </label>
+      <label>DEF Musuh
+        <select id="defMusuh">
+          <option>100%</option><option>200%</option><option>300%</option><option>400%</option><option>500%</option><option>600%</option>
+        </select>
+      </label>
+      <label>HP Musuh
+        <select id="hpMusuh">
+          <option>100%</option><option>200%</option><option>300%</option><option>400%</option><option>500%</option><option>600%</option>
+        </select>
+      </label>
+    </div>
+  </div>
+  <div class="section">
+    <h2>Pasukan Kita</h2>
+    <div class="troop-table-wrap" id="troopKita"></div>
+  </div>
+  <div class="section">
+    <h2>Pasukan Musuh</h2>
+    <div class="troop-table-wrap" id="troopMusuh"></div>
+  </div>
+  <button onclick="hitungSimulasi()">Hitung Simulasi</button>
+  <div class="result" id="hasilSimulasi" style="display:none">
+    <h2>Hasil Simulasi</h2>
+    <div class="pie-wrap" id="pieWrap" style="min-height:265px;position:relative"></div>
+    <div class="hasil-judul" id="laporan"></div>
+  </div>
+</div>
+<script>
+setTimeout(() => {
+  document.getElementById("splash").style.opacity = "0";
+  setTimeout(() => {
+    document.getElementById("splash").style.display = "none";
+    document.getElementById("mainApp").style.display = "block";
+  }, 350);
+}, 1100);
+
+const troopType = ['T1', 'T2', 'T3', 'T4', 'T5'];
+const troopUnit = ['Infantri', 'Pemanah', 'Kavaleri'];
+
+function buildTroopSection(targetID, prefix) {
+  const container = document.getElementById(targetID);
+  let html = `
+    <div class="troop-table-scroll">
+      <table class="troop-table">
+        <thead>
+          <tr>
+            <th style="min-width:55px">Tier</th>
+            <th>Infantri</th>
+            <th>Pemanah</th>
+            <th>Kavaleri</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+  troopType.forEach(t => {
+    html += `<tr>
+      <td class="tier-label">${t}</td>
+      <td><input type="number" min="0" value="0" id="${prefix}_Infantri_${t}"></td>
+      <td><input type="number" min="0" value="0" id="${prefix}_Pemanah_${t}"></td>
+      <td><input type="number" min="0" value="0" id="${prefix}_Kavaleri_${t}"></td>
+    </tr>`;
+  });
+  html += `</tbody></table></div>`;
+  container.innerHTML = html;
+}
+buildTroopSection('troopKita', 'kita');
+buildTroopSection('troopMusuh', 'musuh');
+
+// Fungsi ambil nilai CSS variable
+function getCSSVariableValue(varName) {
+  varName = varName.trim();
+  if (varName.startsWith('var(')) {
+    varName = varName.slice(4, -1).trim();
+  }
+  return getComputedStyle(document.documentElement).getPropertyValue(varName).trim() || "#000";
+}
+
+function hitungSimulasi() {
+  // Tier base stat
+  const tierStats = {
+    T1: { atk: 1, def: 1, hp: 1 },
+    T2: { atk: 1.5, def: 1.2, hp: 1.4 },
+    T3: { atk: 2.5, def: 1.8, hp: 2 },
+    T4: { atk: 3.5, def: 2.5, hp: 2.8 },
+    T5: { atk: 4.5, def: 3.2, hp: 3.5 }
+  };
+  function getFormasiType(val) {
+    if (val.startsWith("inf")) return "inf";
+    if (val.startsWith("range")) return "range";
+    if (val.startsWith("cav")) return "cav";
+    return "inf";
+  }
+  function cekCounter(formasi1, formasi2) {
+    if (
+      (formasi1 === "inf" && formasi2 === "range") ||
+      (formasi1 === "range" && formasi2 === "cav") ||
+      (formasi1 === "cav" && formasi2 === "inf")
+    ) return 1.25;
+    else if (
+      (formasi2 === "inf" && formasi1 === "range") ||
+      (formasi2 === "range" && formasi1 === "cav") ||
+      (formasi2 === "cav" && formasi1 === "inf")
+    ) return 0.75;
+    return 1;
+  }
+  // Pasukan & stats
+  let jumlahKita = 0, atkKita = 0, defKita = 0, hpKita = 0;
+  troopType.forEach(t => {
+    troopUnit.forEach(u => {
+      const val = parseInt(document.getElementById(`kita_${u}_${t}`).value || 0);
+      jumlahKita += val;
+      atkKita += val * tierStats[t].atk;
+      defKita += val * tierStats[t].def;
+      hpKita += val * tierStats[t].hp;
+    });
+  });
+  let jumlahMusuh = 0, atkMusuh = 0, defMusuh = 0, hpMusuh = 0;
+  troopType.forEach(t => {
+    troopUnit.forEach(u => {
+      const val = parseInt(document.getElementById(`musuh_${u}_${t}`).value || 0);
+      jumlahMusuh += val;
+      atkMusuh += val * tierStats[t].atk;
+      defMusuh += val * tierStats[t].def;
+      hpMusuh += val * tierStats[t].hp;
+    });
+  });
+
+  const formasiKita = getFormasiType(document.getElementById("formasiKita").value);
+  const formasiMusuh = getFormasiType(document.getElementById("formasiMusuh").value);
+  const counterKita = cekCounter(formasiKita, formasiMusuh);
+  const counterMusuh = cekCounter(formasiMusuh, formasiKita);
+
+  // Ambil buff
+  function persenToDec(str) { return (parseInt(str) || 0) / 100; }
+  const atkBuffKita = persenToDec(document.getElementById("atkKita").value);
+  const defBuffKita = persenToDec(document.getElementById("defKita").value);
+  const hpBuffKita = persenToDec(document.getElementById("hpKita").value);
+  const atkBuffMusuh = persenToDec(document.getElementById("atkMusuh").value);
+  const defBuffMusuh = persenToDec(document.getElementById("defMusuh").value);
+  const hpBuffMusuh = persenToDec(document.getElementById("hpMusuh").value);
+
+  // Hitung total stat + buff
+  atkKita *= (1 + atkBuffKita);
+  defKita *= (1 + defBuffKita);
+  hpKita  *= (1 + hpBuffKita);
+
+  atkMusuh *= (1 + atkBuffMusuh);
+  defMusuh *= (1 + defBuffMusuh);
+  hpMusuh  *= (1 + hpBuffMusuh);
+
+  // Hitung damage dan sisa pasukan
+  const damageToMusuh = Math.max(0, atkKita * counterKita - defMusuh);
+  const damageToKita = Math.max(0, atkMusuh * counterMusuh - defKita);
+
+  const sisaKita = Math.max(0, jumlahKita - (damageToKita / (jumlahKita ? (hpKita / jumlahKita) : 1)));
+  const sisaMusuh = Math.max(0, jumlahMusuh - (damageToMusuh / (jumlahMusuh ? (hpMusuh / jumlahMusuh) : 1)));
+  const hilangKita = Math.round(jumlahKita - sisaKita);
+  const hilangMusuh = Math.round(jumlahMusuh - sisaMusuh);
+
+  // Pie persentase
+  let persenKita = jumlahKita ? (sisaKita / jumlahKita) * 100 : 0;
+  let persenMusuh = jumlahMusuh ? (sisaMusuh / jumlahMusuh) * 100 : 0;
+  let totalAll = jumlahKita + jumlahMusuh;
+  let persenDraw = totalAll ? ((hilangKita+hilangMusuh) / totalAll) * 100 : 0;
+
+  // Hasil teks
+  let hasilText = `
+    <div style="margin-bottom:8px;">
+      <b>Kita:</b> Total: ${jumlahKita} | Sisa: <b>${Math.round(sisaKita)}</b> | Hilang: <b>${hilangKita}</b>
+      <br>
+      <b>Musuh:</b> Total: ${jumlahMusuh} | Sisa: <b>${Math.round(sisaMusuh)}</b> | Hilang: <b>${hilangMusuh}</b>
+    </div>
+    <span style="font-size:1.18rem;">
+      <b>Hasil:</b> ${
+        sisaKita > sisaMusuh ? '<span style="color:var(--win)">KITA MENANG ✅</span>' :
+        sisaMusuh > sisaKita ? '<span style="color:var(--lose)">KITA KALAH ❌</span>' :
+        '<span style="color:var(--draw)">IMBANG ⚔️</span>'
+      }
+    </span>
+  `;
+
+  document.getElementById("hasilSimulasi").style.display = "block";
+  document.getElementById("laporan").innerHTML = hasilText;
+
+  // PIE chart
+  let pie = document.getElementById('pieChart');
+  if (pie) pie.parentNode.removeChild(pie);
+
+  let pieWrap = document.getElementById('pieWrap');
+  pieWrap.innerHTML = '';
+  pie = document.createElement('canvas');
+  pie.id = "pieChart";
+  pie.width = 240;
+  pie.height = 240;
+  pie.style.width = "180px";
+  pie.style.height = "180px";
+  pie.style.maxWidth = "240px";
+  pie.style.maxHeight = "240px";
+  pie.style.display = "block";
+  pie.style.margin = "0 auto";
+  pieWrap.appendChild(pie);
+
+  // Data pie: [sisaKita, sisaMusuh, pasukanHilang]
+  let lost = (jumlahKita-sisaKita) + (jumlahMusuh-sisaMusuh);
+  let dataPie = [
+    Math.round(sisaKita),
+    Math.round(sisaMusuh),
+    Math.round(lost)
+  ];
+  let colors = [
+    getCSSVariableValue("var(--win)"),
+    getCSSVariableValue("var(--lose)"),
+    getCSSVariableValue("var(--pie3)")
+  ];
+  let percentLabels = ["Sisa Kita", "Sisa Musuh", "Hilang"];
+
+  setTimeout(()=>drawPie(pie,dataPie,colors,percentLabels),100);
+
+  // Tambahkan legend dengan insertAdjacentHTML AGAR canvas tidak terhapus!
+  pieWrap.insertAdjacentHTML('beforeend', `
+    <div class="pie-legend">
+      <div><span class="pie-dot kita"></span> Sisa Kita</div>
+      <div><span class="pie-dot musuh"></span> Sisa Musuh</div>
+      <div><span class="pie-dot hilang"></span> Hilang</div>
+    </div>
+  `);
+
+  function drawPie(canvas, data, colors, percentLabels) {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    let total = data.reduce((a,b)=>a+b,0);
+    let start = -0.5*Math.PI;
+    let cx = canvas.width/2, cy = canvas.height/2, r = Math.min(canvas.width, canvas.height)/2-10;
+    // Draw each sector
+    for(let i=0;i<data.length;i++){
+      let ang = (data[i]/total)*2*Math.PI;
+      ctx.beginPath();
+      ctx.moveTo(cx,cy);
+      ctx.arc(cx,cy, r, start, start+ang, false);
+      ctx.closePath();
+      ctx.fillStyle = colors[i];
+      ctx.shadowColor = "#0004";
+      ctx.shadowBlur = 2;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      start+=ang;
+    }
+    // Draw border
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // Draw percent in center
+    let maxIdx = 0, maxVal = data[0];
+    for(let i=1;i<data.length;i++) {
+      if(data[i]>maxVal) { maxVal=data[i]; maxIdx=i; }
+    }
+    let persen = total? Math.round(data[maxIdx]/total*100) : 0;
+    let wrap = canvas.parentNode;
+    let old = wrap.querySelector('.pie-center-label');
+    if (old) old.remove();
+    let temp = document.createElement('div');
+    temp.className = 'pie-center-label';
+    temp.style.color = colors[maxIdx];
+    temp.innerHTML = `<span style="font-size:1.02rem;">${percentLabels[maxIdx]}</span><br><span style="font-size:2rem;font-weight:bold;color:#222;">${persen}%</span>`;
+    wrap.appendChild(temp);
+  }
+}
+</script>
+
+
+</body></html>
